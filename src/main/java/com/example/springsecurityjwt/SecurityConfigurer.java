@@ -36,7 +36,7 @@ AuthenticationConfiguration authenticationConfiguration;
     public SecurityFilterChain configurer(HttpSecurity http) throws Exception{
         return http
                 .csrf((csrf)-> csrf.disable())
-                .authorizeHttpRequests((authorizeHttpRequests)->authorizeHttpRequests.requestMatchers("/login").permitAll())
+                .authorizeHttpRequests((authorizeHttpRequests)->authorizeHttpRequests.requestMatchers("/login","/refresh").permitAll())
                 .authorizeHttpRequests((authorizeHttpRequests)->authorizeHttpRequests.requestMatchers("/Hello").hasAnyAuthority("Admin"))
                 .authorizeHttpRequests((authorizeHttpRequests)->authorizeHttpRequests.anyRequest().authenticated())
                 .addFilterBefore(new CustomauthorizationFilter(), UsernamePasswordAuthenticationFilter.class)
