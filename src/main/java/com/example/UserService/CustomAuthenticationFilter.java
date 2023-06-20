@@ -45,15 +45,22 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
         logger.info("Success");
 Algorithm algo = Algorithm.HMAC256("secret".getBytes());
         User user = (User) authResult.getPrincipal();
-        String access_token = JWT.create()
+        String accessToken = JWT.create()
                 .withSubject(user.getUsername())
-                .withExpiresAt(new Date(System.currentTimeMillis()+10*60*1000))
+                .withExpiresAt(new Date(System.currentTimeMillis()+2*60*1000))
                 .withClaim("role", user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
                 .withIssuer("Me")
                 .sign(algo);
+        String refreshToken = JWT.create()
+                .withSubject(user.getUsername())
+                .withExpiresAt(new Date(System.currentTimeMillis()+30*60*1000))
+                .withIssuer("Me")
+                .sign(algo);
+
 
         Map<String, String> map = new HashMap<>();
-        map.put("access_token", access_token);
+        map.put("accessToken", accessToken);
+        map.put("refreshToken" , refreshToken);
         JsonMapper mapper = new JsonMapper();
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 

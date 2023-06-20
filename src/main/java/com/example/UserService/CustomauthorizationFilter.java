@@ -22,34 +22,41 @@ import java.util.Collection;
 
 public class CustomauthorizationFilter extends OncePerRequestFilter {
     Logger logger = LoggerFactory.getLogger(CustomauthorizationFilter.class);
-//    implements methods
+
+    //    implements methods
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String authorizationString = request.getHeader("Authorization");
-        if(authorizationString == null){
-            logger.warn("No Token!");
-        }
-        else {
-            if(authorizationString.startsWith("Bearer ")){
-            try{
-                String token = authorizationString.substring("Bearer ".length());
-                Algorithm algo = Algorithm.HMAC256("secret".getBytes());
-                JWTVerifier verifier= JWT.require(algo).build();
-                DecodedJWT decode = verifier.verify(token);
-                Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
-                String[] roles = decode.getClaim("role").asArray(String.class);
-                for(String role: roles){
-                    authorities.add(new SimpleGrantedAuthority(role));
-                }
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(decode.getSubject(), null, authorities);
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-                filterChain.doFilter(request,response);
-            }catch (Exception e){
-                logger.warn(e.getMessage());
-            }
+        logger.info(request.getServletPath());
+        if (request.getServletPath().equals("/login")) {
 
-            }else{
-                logger.warn("not bearer");
+filterChain.doFilter(request,response);
+        } else {
+            if (authorizationString == null) {
+                logger.warn("No Token!");
+            } else {
+                if (authorizationString.startsWith("Bearer ")) {
+                    try {
+                        String token = authorizationString.substring("Bearer ".length());
+                        Algorithm algo = Algorithm.HMAC256("secret".getBytes());
+                        JWTVerifier verifier = JWT.require(algo).build();
+                        DecodedJWT decode = verifier.verify(token);
+                        Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
+                        String[] roles = decode.getClaim("role").asArray(String.class);
+                        for (String role : roles) {
+                            authorities.add(new SimpleGrantedAuthority(role));
+                        }
+                        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(decode.getSubject(), null, authorities);
+                        SecurityContextHolder.getContext().setAuthentication(authToken);
+                        filterChain.doFilter(request, response);
+                    } catch (Exception e) {
+                        logger.warn(e.getMessage());
+                    }
+
+                } else {
+                    logger.warn("not bearer");
+                }
+
             }
         }
     }
